@@ -699,6 +699,8 @@
   // ---------------------------------------------------------------- camera
 
   function freeRect(w, h, portrait) {
+    // the title: the demo ship sails in the free corner beside the menu
+    if (st.mode === 'title') return portrait ? { x: 0, y: h * 0.72, w, h: h * 0.28 } : { x: 0, y: h * 0.42, w: w * 0.3, h: h * 0.58 };
     if (!['play', 'pause'].includes(st.mode) || st.demo) return { x: 0, y: 0, w, h };
     const r = $('mapCard').getBoundingClientRect();
     if (!portrait) return { x: 0, y: 0, w: Math.max(w * 0.5, r.left - 6), h };
@@ -714,6 +716,7 @@
     const portrait = h > w * 1.08;
     const half = S.sea.size / 2;
     let tx, tz, needW = portrait ? 13 : st.level === 'easy' ? 19 : 21, needH = portrait ? 15 : 13, el = 0.95;
+    if (st.mode === 'title') { needW = 8; needH = 7; }
     const ps = st.demo ? S.players.slice(0, 1) : S.players;
     const pts = ps.map((P) => P3(P));
     tx = pts.reduce((a, p) => a + p.x, 0) / pts.length;
@@ -774,7 +777,7 @@
       const v = st.views.get(P.id);
       v.cel = { mode: 'wave', hop: 0, seg: 0, segT: 0, ball: false };
     }
-    banner(`${t('ALL TREASURE FOUND!')}<small>${t('YO HO HO!')}</small>`, 3);
+    banner('ALL TREASURE FOUND!<small>YO HO HO!</small>', 3);
     SFX.treasure();
     Kit.sound.powerup();
     const sum = S.total();
@@ -830,9 +833,9 @@
     show('results');
     $('resTitle').textContent = S.players.length > 1 ? 'TEAM TREASURE!' : 'ALL THE TREASURE!';
     const lines = S.players.map((P) => `<div class="line"><img alt="" class="${P.kind === 'tommy' ? 'tm' : ''}" src="${faces[P.kind]}"><span>${NAMES[P.kind]}</span><span>🪙 ${P.coins}</span></div>`);
-    if (S.players.length > 1) lines.push(`<div class="line"><span>${t('TOGETHER')}</span><span>🪙 ${r.coins}</span></div>`);
+    if (S.players.length > 1) lines.push(`<div class="line"><span>TOGETHER</span><span>🪙 ${r.coins}</span></div>`);
     lines.push(`<div class="line"><span>⏱️ ${fmtTime(r.time)}</span></div>`);
-    const bestLine = r.newBest && r.prev.coins ? t('NEW BEST!') + ` 🪙 ${r.coins}` : `${t('BEST')}: 🪙 ${best[`${st.level}-${S.players.length}`].coins} · ⏱️ ${fmtTime(best[`${st.level}-${S.players.length}`].time)}`;
+    const bestLine = r.newBest && r.prev.coins ? `NEW BEST! 🪙 ${r.coins}` : `BEST: 🪙 ${best[`${st.level}-${S.players.length}`].coins} · ⏱️ ${fmtTime(best[`${st.level}-${S.players.length}`].time)}`;
     lines.push(`<div class="line best">${bestLine}</div>`);
     $('resStats').innerHTML = lines.join('');
     Kit.sound.music('title');
@@ -998,7 +1001,7 @@
     clearInput();
     SFX.sail();
     Kit.sound.music('play');
-    banner(`${t('SET SAIL!')}<small>${t(st.pickLevel === 'easy' ? 'FOLLOW THE ARROW TO THE X' : 'READ THE TREASURE MAP')}</small>`, 2.2);
+    banner(`SET SAIL!<small>${st.pickLevel === 'easy' ? 'FOLLOW THE ARROW TO THE X' : 'READ THE TREASURE MAP'}</small>`, 2.2);
   }
 
   function pause() {
@@ -1038,7 +1041,7 @@
       const b = best[k];
       if (b && b.coins) parts.push(`${label} 🪙 ${b.coins} · ⏱️ ${fmtTime(b.time)}`);
     }
-    $('bests').textContent = parts.length ? `${t('BEST')}: ${parts.join('   ')}` : '';
+    $('bests').textContent = parts.length ? `BEST: ${parts.join('   ')}` : '';
   }
   function setupTitle() {
     $('logoMain').textContent = TT.TITLE.toUpperCase();

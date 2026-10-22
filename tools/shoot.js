@@ -2,7 +2,8 @@
 /* Screenshots with headless Chrome over the DevTools protocol (node 22's built-in WebSocket, no npm).
    node tools/shoot.js [steps.json] [outdir] [width height mobile]
    Defaults: tools/shots.json, docs/, 1280 x 800, and the game from file:// (it works offline). Or set
-   URL=http://localhost:PORT/pirates-tt/ to use a server. Each step may have js (run in the page, using the window.game hooks), wait (ms) and shot (file name).
+   URL=http://localhost:PORT/pirates-tt/ to use a server. Each step may have js (run in the page, using the window.game hooks),
+   touch (real touch events), wait (ms) and shot (file name).
    From TT Sea Battle (and Snow TT Bros). docs/screenshot.jpg: node tools/shoot.js tools/shots.json docs 1200 750
  */
 'use strict';
@@ -49,6 +50,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await sleep(4000);
     for (const s of steps) {
       if (s.size) await send('Emulation.setDeviceMetricsOverride', { width: s.size[0], height: s.size[1], deviceScaleFactor: 1, mobile: false });
+      // touch: [[type, [[x, y], ...]], ...] sent as real touch events (Input.dispatchTouchEvent), 60 ms apart, before the step's js
+      if (s.touch) for (const [type, pts] of s.touch) { await send('Input.dispatchTouchEvent', { type, touchPoints: pts.map(([x, y]) => ({ x, y })) }); await sleep(60); }
       if (s.js) {
         const r = await send('Runtime.evaluate', { expression: s.js, awaitPromise: true, returnByValue: true });
         const v = r.result && r.result.result ? r.result.result.value : r;
