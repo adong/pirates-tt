@@ -15,7 +15,7 @@
   const lerp = (a, b, k) => a + (b - a) * k;
   const smooth = (k) => k * k * (3 - 2 * k);
   const NAMES = { teddy: 'TEDDY', tommy: 'TOMMY', foxy: 'FOXY', froggy: 'FROGGY' };
-  const t = (s) => Kit.lang.t(s);
+  const t = (s, zh) => Kit.lang.t(s, zh);
 
   // ---------------------------------------------------------------- storage
 
