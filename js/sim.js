@@ -296,7 +296,7 @@
       if (sab === 'mirror' && s.team === 'p') mx = -mx;
       const mag = Math.min(1, Math.hypot(mx, my));
       let want = 0;
-      if (mag > 0.15) {
+      if (mag > 0.05) {
         const a = Math.atan2(my, mx);
         const d = angDiff(s.h, a);
         s.h += clamp(d, -s.turn * dt, s.turn * dt);
@@ -514,11 +514,10 @@
         r.far = d > L.engage + 6 ? (r.far || 0) + dt : 0;
         if (r.far > 3) { r.ai = 'roam'; r.target = null; r.calm = L.calm; return inp; }
         const toP = Math.atan2(P.y - r.y, P.x - r.x);
-        // sail up close, then turn the bow (and the water cannon) to face you; too close, and she turns away
+        // sail up close, then turn the bow (and the water cannon) to face you, drifting slowly
         let v, mag = 1;
         if (d > 5.5) v = followTo(r, [cellOf(sea, P.x, P.y)], [P.x, P.y], dt);
-        else if (d < 2.4) { v = { dx: -Math.cos(toP), dy: -Math.sin(toP) }; mag = 0.8; }
-        else { v = { dx: Math.cos(toP), dy: Math.sin(toP) }; mag = 0.22; }
+        else { v = { dx: Math.cos(toP), dy: Math.sin(toP) }; mag = d < 3 ? 0.08 : 0.2; }
         Object.assign(inp, norm(v, mag));
         if (d < 8.5 && Math.abs(angDiff(r.h, toP)) < 0.45) fire(r, toP + (R() * 2 - 1) * L.rivalAim);
         return inp;
@@ -608,7 +607,7 @@
         const [emoji, name] = TREATS[S.treatI++ % TREATS.length];
         emit('treat', { kind: B.kind, emoji, name, to: P });
       }
-      if (B.phase === 'treat' && B.t > 0.95) { B.phase = 'splash'; B.t = 0; B.tossed = false; bigSplash(P); }
+      if (B.phase === 'treat' && B.t > 1.6) { B.phase = 'splash'; B.t = 0; B.tossed = false; bigSplash(P); }
       if (B.phase === 'splash' && B.t > 0.9) { B.phase = 'stay'; B.t = 0; }
       if (B.phase === 'stay') {
         if (B.more > 0) { B.more--; B.phase = 'treat'; B.t = 0; }

@@ -1,0 +1,4 @@
+[
+  { "label": "prefs", "js": "localStorage.setItem('claudeGames.muted', '1'); localStorage.removeItem('claudeGames.lang'); localStorage.removeItem('piratesTT.best'); localStorage.removeItem('piratesTT.settings'); location.reload(); 'reload'", "wait": 4000 },
+  { "label": "title", "js": "game.keepAwake(true); game.step(3); 'ok'", "wait": 500, "shot": "screenshot" }
+]

@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1f78c4">
+<title>TT Pirates · Teddy &amp; Tommy</title>
+<!-- The game's icon: the same emoji as its card on the dashboard, on a coloured tile. It's the browser tab's icon (the SVG, then
+     a PNG drawn below) and the iPad home screen's (apple-touch-icon). The device's own emoji font draws it: no image files. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20x='2'%20y='2'%20width='60'%20height='60'%20rx='14'%20fill='%2318d4ff'%20stroke='%2314121f'%20stroke-width='4'/%3E%3Ctext%20x='32'%20y='44'%20font-size='36'%20text-anchor='middle'%3E%F0%9F%8F%B4%E2%80%8D%E2%98%A0%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<script>
+  (function (emoji, tile) {
+    function draw(size, framed) {
+      const c = document.createElement('canvas');
+      c.width = c.height = size;
+      const g = c.getContext('2d');
+      if (!g) return '';
+      const u = size / 64;
+      g.fillStyle = tile;
+      if (framed) { // the tab: a rounded tile with the dashboard's dark outline
+        g.beginPath();
+        if (g.roundRect) g.roundRect(2 * u, 2 * u, 60 * u, 60 * u, 14 * u); else g.rect(2 * u, 2 * u, 60 * u, 60 * u);
+        g.fill();
+        g.lineWidth = 4 * u;
+        g.strokeStyle = '#14121f';
+        g.stroke();
+      } else g.fillRect(0, 0, size, size); // the home screen: iOS rounds the corners itself
+      g.font = `${Math.round(size * (framed ? 0.56 : 0.62))}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+      g.textAlign = 'center';
+      const m = g.measureText(emoji);
+      const up = m.actualBoundingBoxAscent || size * 0.4, down = m.actualBoundingBoxDescent || 0;
+      g.fillText(emoji, size / 2, size / 2 + (up - down) / 2);
+      try { return c.toDataURL('image/png'); } catch (e) { return ''; }
+    }
+    const tab = draw(64, true), home = draw(180, false);
+    if (tab) document.querySelector('link[rel="icon"]').href = tab;
+    if (home) {
+      const l = document.createElement('link');
+      l.rel = 'apple-touch-icon';
+      l.href = home;
+      document.head.appendChild(l);
+    }
+  })('🏴‍☠️', '#18d4ff');
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --yellow: #ffd400;
+    --pink: #ff3d7f;
+    --cyan: #18d4ff;
+    --blue: #3f86e8;
+    --orange: #ff8a1f;
+    --red: #e5322d;
+    --ink: #14121f;
+    --paper: #f6e7bf;
+    --panel: rgba(16, 40, 70, 0.62);
+    --display: 'Bungee', 'Arial Black', Impact, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden; background: #1f78c4; color: #fff;
+    font-family: 'Rubik', system-ui, -apple-system, sans-serif;
+    touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  }
+  #view { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .hidden { display: none !important; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  kbd {
+    display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 5px; margin: 1px;
+    font: 700 12px/1 system-ui, sans-serif; color: var(--ink); background: #fff; border-radius: 6px; box-shadow: 0 2px 0 #9aa;
+  }
+
+  /* ---------- HUD ---------- */
+  #hud { position: fixed; inset: 0; pointer-events: none; }
+  #cards { position: absolute; left: max(10px, env(safe-area-inset-left)); top: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .card {
+    display: flex; gap: 8px; align-items: center; padding: 6px 10px 6px 6px; border-radius: 16px;
+    background: var(--panel); border: 3px solid rgba(255, 255, 255, 0.8);
+  }
+  .card .face { flex: none; width: 52px; height: 52px; border-radius: 13px; border: 3px solid #fff; background: radial-gradient(circle at 50% 35%, #a5dcff, #2a6fd0); overflow: hidden; }
+  .card.tommy .face { background: radial-gradient(circle at 50% 35%, #ffe2a0, #ff8a1f); }
+  .card .face img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.15) translateY(4%); }
+  .card .info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .card .nm { font-family: var(--display); font-size: 16px; line-height: 1; }
+  .card .coins { font: 800 18px/1 'Rubik', sans-serif; }
+  .card .drops { display: flex; gap: 1px; font-size: 13px; line-height: 1; }
+  .card .drops i { font-style: normal; opacity: 0.22; filter: grayscale(1); }
+  .card .drops i.on { opacity: 1; filter: none; }
+  .card.bump { border-color: var(--yellow); }
+
+  #mapCard {
+    position: absolute; right: max(10px, env(safe-area-inset-right)); top: 10px; width: 236px; pointer-events: auto;
+    padding: 8px; border-radius: 18px; background: #8a5a2b; border: 3px solid var(--ink); box-shadow: 0 6px 0 rgba(20, 18, 31, 0.6);
+    display: flex; flex-direction: column; gap: 6px; transform-origin: top right;
+  }
+  #mapCard .mhead { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+  #mapCard .mtitle { font-family: var(--display); font-size: 14px; color: var(--yellow); -webkit-text-stroke: 1px var(--ink); paint-order: stroke fill; white-space: nowrap; }
+  #prog { font-size: 15px; letter-spacing: 1px; white-space: nowrap; text-align: center; line-height: 1; }
+  #prog i { font-style: normal; opacity: 0.3; filter: grayscale(1); }
+  #prog i.on { opacity: 1; filter: none; }
+  #mapCv { width: 100%; aspect-ratio: 1; border-radius: 10px; display: block; background: var(--paper); }
+  #clue {
+    font-family: var(--display); font-size: 16px; line-height: 1.25; color: var(--ink); background: var(--paper);
+    border-radius: 10px; padding: 6px 8px; text-align: center; border: 2px solid rgba(20, 18, 31, 0.3);
+  }
+  #mapCard.flash { animation: mapflash 0.6s ease-out 2; }
+  @keyframes mapflash { 50% { box-shadow: 0 0 0 6px var(--yellow), 0 6px 0 rgba(20, 18, 31, 0.6); } }
+  .ibtns { display: flex; gap: 6px; }
+  .ibtn { width: 34px; height: 34px; border-radius: 10px; font-size: 15px; line-height: 1; background: rgba(20, 18, 31, 0.55); border: 2px solid rgba(255, 255, 255, 0.85); display: grid; place-items: center; pointer-events: auto; }
+
+  #compass {
+    position: absolute; left: 50%; bottom: max(12px, env(safe-area-inset-bottom)); translate: -50% 0;
+    display: flex; align-items: center; gap: 8px; padding: 5px 12px 5px 5px; border-radius: 999px;
+    background: var(--panel); border: 3px solid rgba(255, 255, 255, 0.8);
+  }
+  #compassCv { width: 58px; height: 58px; display: block; }
+  #heading { font-family: var(--display); font-size: 15px; line-height: 1.1; white-space: nowrap; }
+
+  /* the brother's button: his face */
+  .budbtn {
+    position: absolute; width: 96px; height: 96px; padding: 0; border-radius: 50%; pointer-events: auto;
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 35%, #ffe2a0, #ff9f1c); border: 4px solid #fff; box-shadow: 0 6px 0 var(--ink);
+  }
+  .budbtn .pics { display: flex; width: 78px; height: 78px; border-radius: 50%; overflow: hidden; }
+  .budbtn .pics img { flex: 1; min-width: 0; height: 100%; object-fit: cover; }
+  .budbtn.two .pics img { object-position: 50% 30%; }
+  .budbtn small { position: absolute; bottom: -12px; left: 50%; translate: -50% 0; white-space: nowrap; font: 800 11px/1 'Rubik', sans-serif; letter-spacing: 0.5px; padding: 4px 9px; border-radius: 999px; background: var(--ink); border: 2px solid #fff; }
+  .budbtn kbd { position: absolute; top: 6px; right: 8px; min-width: 18px; height: 18px; font-size: 10px; }
+  .touch .budbtn kbd { display: none; }
+  .budbtn.on { border-color: var(--yellow); box-shadow: 0 6px 0 var(--ink), 0 0 24px rgba(255, 212, 0, 0.95); }
+  .budbtn.down { transform: translateY(5px); box-shadow: 0 1px 0 var(--ink); }
+
+  /* touch: a stick and a SPLASH button per player */
+  .stick {
+    position: absolute; width: 150px; height: 150px; border-radius: 50%; pointer-events: auto; touch-action: none; display: none;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.28), rgba(16, 40, 70, 0.5)); border: 4px solid rgba(255, 255, 255, 0.85);
+  }
+  .stick .ar { position: absolute; font: 400 14px/1 var(--display); opacity: 0.9; text-shadow: 0 2px 0 var(--ink); }
+  .stick .n { top: 6px; left: 50%; translate: -50% 0; color: var(--yellow); }
+  .stick .s { bottom: 6px; left: 50%; translate: -50% 0; }
+  .stick .w { left: 8px; top: 50%; translate: 0 -50%; }
+  .stick .e { right: 8px; top: 50%; translate: 0 -50%; }
+  .stick .knob { position: absolute; left: 50%; top: 50%; width: 60px; height: 60px; margin: -30px; border-radius: 50%; background: var(--yellow); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink); }
+  #stick1 .knob { background: var(--orange); }
+  .firebtn {
+    position: absolute; width: 104px; height: 104px; border-radius: 50%; pointer-events: auto; touch-action: none; display: none;
+    font-size: 40px; line-height: 1; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    background: linear-gradient(160deg, #a5ecff, #1d8fe0); border: 4px solid #fff; box-shadow: 0 6px 0 var(--ink);
+  }
+  .firebtn small { font: 800 11px/1 'Rubik', sans-serif; letter-spacing: 1px; }
+  #fire1 { background: linear-gradient(160deg, #ffd9a8, var(--orange)); }
+  .firebtn.down { transform: translateY(5px); box-shadow: 0 1px 0 var(--ink); filter: brightness(1.15); }
+  .touch .stick.show { display: block; }
+  .touch .firebtn.show { display: flex; }
+
+  /* toasts and the banner (their pop-in is driven by the game clock, so they work in a background tab too) */
+  #toasts { position: absolute; left: 0; right: 0; top: 0; height: 0; pointer-events: none; }
+  .toast {
+    position: absolute; left: 50%; white-space: nowrap; font-family: var(--display); font-size: clamp(15px, 2.6vw, 26px); color: #fff;
+    padding: 4px 16px; border-radius: 16px; -webkit-text-stroke: 1.5px var(--ink); paint-order: stroke fill; text-shadow: 0 3px 0 var(--ink);
+    background: rgba(16, 40, 70, 0.45);
+  }
+  .toast.good { color: var(--yellow); }
+  .toast.buddy { color: var(--cyan); font-size: clamp(18px, 3.2vw, 34px); }
+  .toast.oops { color: #ffd0d0; }
+  .banner {
+    position: absolute; left: 0; right: 0; text-align: center; font-family: var(--display); pointer-events: none;
+    font-size: clamp(32px, 7.5vw, 90px); line-height: 1; color: var(--yellow); padding: 0 12px;
+    -webkit-text-stroke: 4px var(--ink); paint-order: stroke fill; text-shadow: 0 7px 0 var(--pink), 0 12px 0 var(--ink), 0 20px 30px rgba(0, 0, 0, 0.35);
+  }
+  .banner small { display: block; font-size: 0.32em; margin-top: 10px; color: #fff; -webkit-text-stroke: 2px var(--ink); text-shadow: 0 4px 0 var(--ink); }
+
+  /* ---------- screens ---------- */
+  .screen {
+    position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: safe center;
+    gap: clamp(8px, 1.7vh, 16px); padding: 16px 60px; text-align: center; overflow-y: auto;
+    background: linear-gradient(180deg, rgba(10, 30, 60, 0.2), rgba(10, 30, 60, 0.66));
+  }
+  .screen > * { flex-shrink: 0; }
+  .logo { transform: rotate(-4deg); line-height: 0.9; margin-bottom: 4px; }
+  .logo span { display: block; font-family: var(--display); -webkit-text-stroke: 4px var(--ink); paint-order: stroke fill; }
+  .logo .l1 { color: #fff; font-size: clamp(18px, min(4.2vw, 4.6vh), 40px); text-shadow: 0 5px 0 var(--blue), 0 9px 0 var(--ink); }
+  .logo .l2 { color: var(--yellow); font-size: clamp(42px, min(11vw, 12vh), 116px); text-shadow: 0 6px 0 var(--pink), 0 11px 0 var(--ink), 0 18px 30px rgba(0, 0, 0, 0.35); }
+  .tag { font-size: clamp(14px, 2.2vw, 20px); font-weight: 700; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6); max-width: 680px; }
+  .btn {
+    font-family: var(--display); font-size: clamp(17px, 3vw, 25px); color: var(--ink); pointer-events: auto;
+    background: var(--yellow); border: 4px solid var(--ink); border-radius: 20px; padding: 10px 22px;
+    box-shadow: 0 8px 0 var(--ink), 0 14px 30px rgba(0, 0, 0, 0.3);
+  }
+  .btn:hover { filter: brightness(1.06); }
+  .btn:active { transform: translateY(6px); box-shadow: 0 2px 0 var(--ink); }
+  .btn.alt { background: var(--cyan); }
+  .btn.orange { background: #ffb26b; }
+  .btn.ghost { background: #fff; }
+  .btn.small { font-size: clamp(14px, 2.2vw, 18px); padding: 7px 16px; border-radius: 15px; box-shadow: 0 6px 0 var(--ink); }
+  .btn small { display: block; font: 800 11px/1.2 'Rubik', sans-serif; letter-spacing: 0.5px; margin-top: 3px; }
+  .modes { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; align-items: stretch; }
+  .mode { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 16px 12px; min-width: 150px; }
+  .mode .pics { display: flex; gap: 2px; height: clamp(54px, 9vh, 84px); }
+  .mode .pics img { height: 100%; aspect-ratio: 1; border-radius: 14px; border: 3px solid var(--ink); background: radial-gradient(circle at 50% 35%, #a5dcff, #2a6fd0); }
+  .mode .pics img.tm { background: radial-gradient(circle at 50% 35%, #ffe2a0, #ff8a1f); }
+  .pulse { animation: pulse 1.3s ease-in-out infinite; }
+  @keyframes pulse { 50% { transform: scale(1.05); } }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; align-items: center; }
+  .seg { display: flex; border-radius: 16px; overflow: hidden; border: 3px solid var(--ink); box-shadow: 0 5px 0 var(--ink); pointer-events: auto; }
+  .seg button { white-space: nowrap; padding: 7px 14px; font-family: var(--display); font-size: 15px; background: rgba(255, 255, 255, 0.85); color: var(--ink); }
+  .seg button small { display: block; font: 800 10px/1.1 'Rubik', sans-serif; }
+  .seg button[aria-checked="true"] { background: var(--yellow); }
+  .keys {
+    display: grid; grid-template-columns: auto auto auto; gap: 3px 14px; align-items: center; text-align: left;
+    padding: 9px 14px; border-radius: 16px; background: rgba(16, 40, 70, 0.6); border: 2px solid rgba(255, 255, 255, 0.6);
+    font-size: 13px; font-weight: 700;
+  }
+  .keys .h { font-family: var(--display); font-size: 12px; font-weight: 400; letter-spacing: 1px; }
+  .keys .h.p1 { color: #8cc2ff; }
+  .keys .h.p2 { color: #ffc28a; }
+  .touch-hint { display: none; font-weight: 700; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6); max-width: 560px; }
+  .touch .keys { display: none; }
+  .touch .touch-hint { display: block; }
+  .bests { font-size: 13px; font-weight: 800; opacity: 0.95; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7); }
+  .credit { position: fixed; right: max(14px, env(safe-area-inset-right)); bottom: max(10px, env(safe-area-inset-bottom)); font-size: 13px; font-weight: 700; opacity: 0.85; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6); pointer-events: none; }
+  .credit b { color: #ffe2a0; }
+  .big {
+    font-family: var(--display); font-size: clamp(34px, 7.5vw, 84px); line-height: 1; color: var(--cyan); transform: rotate(-3deg);
+    -webkit-text-stroke: 4px var(--ink); paint-order: stroke fill; text-shadow: 0 7px 0 var(--yellow), 0 12px 0 var(--ink);
+  }
+  .big.yellow { color: var(--yellow); text-shadow: 0 7px 0 var(--pink), 0 12px 0 var(--ink); }
+  .hint { font-size: 13px; font-weight: 700; opacity: 0.9; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6); }
+  .stats { padding: 10px 18px; border-radius: 16px; background: rgba(16, 40, 70, 0.75); border: 2px solid rgba(255, 255, 255, 0.7); font-weight: 800; display: grid; gap: 6px; }
+  .stats .line { display: flex; gap: 10px; align-items: center; justify-content: center; font-size: clamp(16px, 2.6vw, 22px); }
+  .stats .line img { width: 36px; height: 36px; border-radius: 10px; border: 2px solid #fff; background: radial-gradient(circle at 50% 35%, #a5dcff, #2a6fd0); }
+  .stats .line img.tm { background: radial-gradient(circle at 50% 35%, #ffe2a0, #ff8a1f); }
+  .stats .best { color: var(--yellow); font-size: clamp(14px, 2.2vw, 18px); }
+  #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #1f78c4; font-family: var(--display); font-size: 28px; letter-spacing: 2px; padding: 24px; text-align: center; }
+
+  /* small screens */
+  .compact #mapCard { width: 158px; padding: 5px; gap: 4px; border-radius: 14px; }
+  .compact #mapCard .mtitle { display: none; }
+  .compact #mapCard .mhead { justify-content: flex-end; }
+  .compact #prog { font-size: 11px; letter-spacing: 0; }
+  .compact #clue { font-size: 11px; padding: 4px 5px; }
+  .compact .ibtn { width: 30px; height: 30px; font-size: 13px; }
+  .compact .card { padding: 3px 7px 3px 3px; border-radius: 12px; gap: 5px; }
+  .compact .card .face { width: 36px; height: 36px; border-radius: 9px; }
+  .compact .card .nm { font-size: 12px; }
+  .compact .card .coins { font-size: 14px; }
+  .compact .card .drops { font-size: 10px; }
+  .compact #compassCv { width: 44px; height: 44px; }
+  .compact #heading { font-size: 12px; }
+  .short .stick { width: 124px; height: 124px; }
+  .short .stick .knob { width: 50px; height: 50px; margin: -25px; }
+  .short .firebtn { width: 86px; height: 86px; font-size: 32px; }
+  .short .budbtn { width: 80px; height: 80px; }
+  .short .budbtn .pics { width: 62px; height: 62px; }
+  .short #mapCard { width: 136px; }
+  .short.two #mapCard { width: 112px; }
+  .short.two #clue { font-size: 10px; }
+  .portrait #compass { left: max(10px, env(safe-area-inset-left)); translate: none; bottom: auto; padding-right: 10px; }
+  .portrait #heading { white-space: normal; max-width: 92px; }
+  @media (max-width: 640px) { .credit { display: none; } }
+  @media (max-height: 480px) and (orientation: landscape) {
+    #title { gap: 6px; padding: 8px 60px; }
+    #title .logo .l1 { font-size: 16px; }
+    #title .logo .l2 { font-size: 40px; }
+    #title .tag { font-size: 13px; }
+    #title .modes { gap: 8px; flex-wrap: nowrap; }
+    #title .mode { min-width: 0; padding: 6px 10px 7px; font-size: 15px; border-radius: 16px; box-shadow: 0 5px 0 var(--ink); }
+    #title .mode .pics { height: 40px; }
+    #title .touch-hint, #title .credit, #title .bests { display: none; }
+    .seg button { padding: 5px 10px; font-size: 13px; }
+    .screen { gap: 6px; padding: 8px 60px; }
+    .big { font-size: 32px; -webkit-text-stroke: 3px var(--ink); text-shadow: 0 4px 0 var(--yellow), 0 7px 0 var(--ink); }
+    .big.yellow { text-shadow: 0 4px 0 var(--pink), 0 7px 0 var(--ink); }
+    .stats { padding: 5px 12px; gap: 2px; }
+    .stats .line { font-size: 14px; }
+    .stats .line img { width: 26px; height: 26px; }
+    .btn { font-size: 15px; padding: 6px 14px; box-shadow: 0 5px 0 var(--ink); }
+  }
+</style>
+</head>
+<body>
+<canvas id="view"></canvas>
+
+<div id="hud" class="hidden">
+  <div id="cards">
+    <div class="card teddy" id="card0"><div class="face"><img alt=""></div><div class="info"><div class="nm">TEDDY</div><div class="coins">🪙 0</div><div class="drops"></div></div></div>
+    <div class="card tommy" id="card1"><div class="face"><img alt=""></div><div class="info"><div class="nm">TOMMY</div><div class="coins">🪙 0</div><div class="drops"></div></div></div>
+  </div>
+  <div id="mapCard">
+    <div class="mhead"><span class="mtitle">🗺️ TREASURE MAP</span><span class="ibtns"><button id="pauseBtn" class="ibtn" title="Pause (P)">❚❚</button><button class="ibtn muteBtn" title="Sound (M)">🔊</button></span></div>
+    <canvas id="mapCv" width="440" height="440"></canvas>
+    <div id="clue"></div>
+    <div id="prog"></div>
+  </div>
+  <div id="compass"><canvas id="compassCv" width="120" height="120"></canvas><div id="heading"></div></div>
+  <button id="budBtn" class="budbtn"><span class="pics"><img alt=""><img alt="" class="hidden"></span><small>CALL TOMMY</small><kbd>T</kbd></button>
+  <div id="toasts"></div>
+  <div id="banner" class="banner hidden"></div>
+</div>
+
+<div id="touch">
+  <div id="stick0" class="stick"><span class="ar n" data-zh="北">N</span><span class="ar s" data-zh="南">S</span><span class="ar w" data-zh="西">W</span><span class="ar e" data-zh="东">E</span><i class="knob"></i></div>
+  <button id="fire0" class="firebtn">💦<small>SPLASH</small></button>
+  <div id="stick1" class="stick"><span class="ar n" data-zh="北">N</span><span class="ar s" data-zh="南">S</span><span class="ar w" data-zh="西">W</span><span class="ar e" data-zh="东">E</span><i class="knob"></i></div>
+  <button id="fire1" class="firebtn">💦<small>SPLASH</small></button>
+</div>
+
+<div id="title" class="screen hidden">
+  <div class="logo"><span class="l1">TEDDY &amp; TOMMY</span><span class="l2" id="logoMain"></span></div>
+  <p class="tag">Sail your toy pirate ship, follow the treasure map and splash your friends!</p>
+  <div class="modes">
+    <button class="btn mode pulse" data-play="teddy"><span class="pics"><img alt="" data-face="teddy"></span>TEDDY<small>1 player · key 1</small></button>
+    <button class="btn mode orange" data-play="tommy"><span class="pics"><img alt="" class="tm" data-face="tommy"></span>TOMMY<small>1 player · key 2</small></button>
+    <button class="btn mode alt" data-play="both"><span class="pics"><img alt="" data-face="teddy"><img alt="" class="tm" data-face="tommy"></span>TEDDY + TOMMY<small>2 players, one ship each · key 3</small></button>
+  </div>
+  <div class="row">
+    <div class="seg" role="radiogroup" aria-label="Difficulty"><button data-level="easy" role="radio">🐣 EASY<small>little sea · the X shows the way</small></button><button data-level="normal" role="radio">🔥 NORMAL<small>big sea · read the clue</small></button></div>
+  </div>
+  <div class="keys">
+    <span></span><span class="h p1">TEDDY · 1P</span><span class="h p2">TOMMY · 2P</span>
+    <span>sail</span><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span><span><kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd></span>
+    <span>water cannon</span><span><kbd>F</kbd> <kbd>Space</kbd></span><span><kbd>L</kbd></span>
+    <span>call your brother</span><span><kbd>T</kbd></span><span><kbd>Enter</kbd></span>
+    <span>pause · sound</span><span><kbd>P</kbd> <kbd>M</kbd></span><span><kbd>E</kbd> easy / normal</span>
+  </div>
+  <p class="touch-hint">Thumb on the wheel to sail (N is north), the big 💦 button to splash, and tap your brother's face to call him. Two players can share an iPad: each gets a wheel and a 💦 button.</p>
+  <p class="bests" id="bests"></p>
+  <div class="credit">built with <b>Claude Code</b></div>
+</div>
+
+<div id="pause" class="screen hidden">
+  <div class="big">PAUSED</div>
+  <div class="row">
+    <button id="resumeBtn" class="btn">▶ RESUME</button>
+    <button id="restartBtn" class="btn small ghost">↻ NEW VOYAGE</button>
+    <button id="quitBtn" class="btn small ghost">MENU</button>
+  </div>
+  <p class="hint">P · Esc · Space to resume · R new voyage · Q menu · M sound</p>
+</div>
+
+<div id="results" class="screen hidden">
+  <div class="big yellow" id="resTitle">ALL THE TREASURE!</div>
+  <div class="stats" id="resStats"></div>
+  <div class="row">
+    <button id="againBtn" class="btn pulse">↻ PLAY AGAIN</button>
+    <button id="resMenuBtn" class="btn small ghost">MENU</button>
+  </div>
+  <p class="hint">Enter · Space play again · Esc menu</p>
+</div>
+
+<div id="loading">LOADING…</div>
+
+<script src="kit/three.min.js"></script>
+<script src="kit/gfx.js"></script>
+<script src="kit/people.js"></script>
+<script src="kit/roster.js"></script>
+<script src="kit/portraits.js"></script>
+<script src="kit/sound.js"></script>
+<script src="kit/lang.js"></script>
+<script src="kit/help.js"></script>
+<script src="js/title.js"></script>
+<script src="js/friends.js"></script>
+<script src="js/sim.js"></script>
+<script src="js/check.js"></script>
+<script src="js/sfx.js"></script>
+<script src="js/art.js"></script>
+<script src="js/game.js"></script>
+<script src="js/keys.js"></script>
+<script src="js/zh.js"></script>
+</body>
+</html>
